@@ -1,16 +1,19 @@
 
 CC = arm-linux-gnueabihf-gcc
 
-target = my_project
+OBJ = ./bin
+
+target = ${OBJ}/my_project
+
 
 source_c = ${wildcard *.c}
-object_c = ${patsubst %.c, %.o, ${notdir ${source_c}}}
+object_c = ${patsubst %.c, ${OBJ}/%.o, ${notdir ${source_c}}}
 
-${target}:${object_c}
+${target}:${object_c}	
 	${CC} -o $@ $^
 
-%.o:%.c
+${OBJ}/%.o:%.c
 	${CC} -c $< -o $@
 
 clean:
-	rm -rf *.o ${target} *~
+	rm -rf ${OBJ}/*.o ${target} *~
