@@ -14,7 +14,7 @@
 
 int main(int argc, char **argv)
 {
-	////
+	DEBUG(" ... main\n");
 
 	return 0;
 }
