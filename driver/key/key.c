@@ -1,0 +1,165 @@
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/platform_device.h>
+
+#include <linux/io.h>
+#include <linux/interrupt.h>
+#include <linux/irq.h>
+#include <linux/gpio.h>
+
+#include <linux/timer.h>
+#include <linux/jiffies.h>
+
+#include <linux/fs.h>
+#include <linux/cdev.h>
+
+#include <linux/uaccess.h>
+
+#include <linux/irq.h>
+
+#include <linux/workqueue.h> 
+
+#include <linux/poll.h>
+#include <linux/sched.h> 
+
+#include <linux/delay.h>
+
+#define GPIO_TO_PIN(bank, gpio) (32 * ((bank) - 1) + (gpio))
+
+
+
+#define KEY2 GPIO_TO_PIN(4, 14)
+
+
+static dev_t  devid;
+
+static struct cdev *cdev;
+static struct class *dev_class;
+
+
+static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
+static int ev_press = 0;
+
+
+static int key_open(struct inode *inode, struct file *file)
+{
+	printk(" key_open ... \n");
+	return 0;
+}
+
+static int key_close(struct inode *inode, struct file *file)
+{
+	return 0;
+}
+
+static int key_read(struct file *file, char __user *user, size_t size, loff_t *offset)
+{
+	
+	int data = gpio_get_value(KEY2);
+	
+	copy_to_user(user, &data, size);
+			
+	//wait_event_interruptible(button_waitq, ev_press);
+	//ev_press = 0;
+
+	return 0;
+}
+
+static int key_write(struct file *file, const char __user *user, size_t size, loff_t *offset)
+{
+	int data;
+	
+	copy_from_user(&data, user, size);
+	printk(" led_write ... %d \n", data);
+	return 0;
+}
+
+static unsigned int key_poll(struct file *file, struct poll_table_struct *wait)
+{
+	unsigned int mask = 0;
+	poll_wait(file, &button_waitq, wait);
+
+	if(ev_press)
+	{
+		mask |= POLLIN | POLLRDNORM;  /* 表示有数据可读 */
+	}
+	ev_press = 0;
+	return mask; 	
+
+}
+
+static struct file_operations fops ={
+	.owner = THIS_MODULE,
+	.open  = key_open,
+	.read  = key_read,
+	.write = key_write,
+	.release = key_close,	
+	.poll = key_poll,
+};
+
+static irqreturn_t key_interruppt(int irq, void *dev_id)
+{	
+
+	int data = gpio_get_value(KEY2);
+	if(0 == data)
+	{
+		ev_press = 1;							
+		wake_up_interruptible(&button_waitq);
+	}
+
+	return IRQ_HANDLED;
+}
+
+
+static int key__init(void)
+{
+	int ret;	
+	
+	ret = gpio_request(KEY2, "KEY2");
+	if(ret < 0)
+	{
+		printk(" gpio request KEY2 error \n");
+		return ret;
+	}
+	gpio_direction_input(KEY2);
+
+	request_irq(gpio_to_irq(KEY2), key_interruppt, IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "key2",NULL);
+
+	
+	ret = alloc_chrdev_region(&devid, 0, 1, "key");
+	if(ret)
+	{
+		printk(" alloc _region_chrdev error \n");
+		return -1;
+	}
+
+		
+	
+	cdev = cdev_alloc();
+	cdev->owner = THIS_MODULE;
+	cdev_init(cdev, &fops);
+	cdev_add(cdev, devid, 1);
+	
+	dev_class = class_create(THIS_MODULE, "key");
+	device_create(dev_class, NULL, devid, NULL, "key");		
+
+	return 0;
+}
+
+static void key_exit(void)
+{
+
+	
+	unregister_chrdev_region(devid, 1);
+	cdev_del(cdev);
+	device_destroy(dev_class, devid);
+	class_destroy(dev_class);
+
+	free_irq(gpio_to_irq(KEY2), NULL);
+	gpio_free(KEY2);
+}
+
+module_init(key__init);
+module_exit(key_exit);
+MODULE_LICENSE("GPL");

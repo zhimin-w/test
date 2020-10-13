@@ -1,5 +1,5 @@
 
-CC = arm-linux-gnueabihf-gcc
+CC = gcc
 #arm-linux-gnueabihf-gcc
 
 OBJ = ./bin

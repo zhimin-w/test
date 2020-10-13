@@ -1,0 +1,1 @@
+cmd_/home/wzm/test/driver/key/key.ko := arm-linux-gnueabihf-ld -EL -r  -T ./scripts/module-common.lds --build-id  -o /home/wzm/test/driver/key/key.ko /home/wzm/test/driver/key/key.o /home/wzm/test/driver/key/key.mod.o

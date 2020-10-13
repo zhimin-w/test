@@ -1,0 +1,11 @@
+
+obj-m := key.o  
+KERNEL_DIR := /home/wzm/Task/TQ335X/linux/linux-4.9.2
+
+PWD := $(shell pwd)  
+
+all:  
+	$(MAKE) -C $(KERNEL_DIR) M=$(PWD) modules  
+	
+clean:  
+	rm *.o *.ko *.mod.c  

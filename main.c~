@@ -88,7 +88,7 @@ void *key_pthread_func(void *argv)
 						DEBUG(" ... long key \n");
 					}
 					count = 0;
-					flag = 0;	
+					key = 0;	
 				}
 				
 			}
