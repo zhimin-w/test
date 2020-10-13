@@ -63,7 +63,7 @@ void *key_pthread_func(void *argv)
 		time.tv_sec = 0;
 		time.tv_usec = 50000;
 	
-		ret = select(file +1, &fds, NULL, NULL, &time);
+		ret = select(file + 1, &fds, NULL, NULL, &time);
 		if(-1 == ret)
 		{
 			DEBUG(" ... %s select error \n", __func__);
