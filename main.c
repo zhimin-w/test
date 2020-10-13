@@ -11,6 +11,8 @@
 #include <pthread.h>
 #include <signal.h>
 
+#include "log.h"
+
 #define DEBUG(...) printf(__VA_ARGS__)
 
 void sig_func(int sig_num)
@@ -26,6 +28,9 @@ int main(int argc, char **argv)
 	signal(SIGTERM, sig_func);
 	signal(SIGINT, sig_func);
 	signal(SIGQUIT, sig_func);
+
+	log_init();
+	log_sys(".. %s %s \n",  __DATE__, __TIME__);
 
 	return 0;
 }
