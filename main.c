@@ -10,7 +10,8 @@
 #include <fcntl.h>
 #include <pthread.h>
 #include <signal.h>
-
+#include <sys/select.h>
+#include <sys/time.h>
 
 #include "log.h"
 
@@ -40,10 +41,44 @@ void *key_pthread_func(void *argv)
 {
 	pthread_detach(pthread_self());
 
+	int ret;
+	struct timeval time;
+	fd_set fds;
+	int file = open("/dev/key", O_RDWR | 0666);	
+	if(file)
+	{
+		DEBUG("... %s open error \n", __func__);
+		pthread_exit(0);
+		exit(-1);
+	}
+
 	while(1)
 	{
-		DEBUG(".... %s \n", __func__);
-		sleep(1);
+		FD_ZERO(&fds);
+		FD_SET(file, &fds);
+
+		time.tv_sec = 0;
+		time.tv_usec = 10000;
+	
+		ret = select(file +1, &fds, NULL, NULL, &time);
+		if(-1 == ret)
+		{
+			DEBUG(" ... %s select error \n", __func__);
+			pthread_exit(0);
+			exit(-1);
+		}
+		else if(0 == ret)
+		{
+			continue;
+		}
+		else if(0 < ret)
+		{
+			if(FD_ISSET(file, &fds))
+			{
+				DEBUG(" ... select FD_ISSET \n");
+			}
+		}
+
 	}
 
 	pthread_exit(0);
