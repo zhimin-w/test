@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <sys/ioctl.h>
 
 #include "log.h"
 
@@ -23,15 +24,46 @@ void sig_func(int sig_num)
 	exit(0);
 }
 
+#define KEY_SHORT (1 << 0)
+#define KEY_LONG  (1 << 1)
+unsigned char key_status = 0;
 
 void *led_pthread_func(void *argv)
 {
 	pthread_detach(pthread_self());
 
+	pthread_mutex_t pthread_mutex;
+	pthread_mutex_init(&pthread_mutex, NULL);
+
+	int file = open("/dev/led", O_RDWR | 0666);
+	if(file < 0)
+	{
+		DEBUG(" ... %s open error \n", __func__);		
+		pthread_exit(0);
+		exit(-1);
+	}
+
 	while(1)
 	{
-		//DEBUG(".... %s \n", __func__);
-		sleep(1);
+		
+		if(key_status & KEY_LONG)
+		{
+			pthread_mutex_lock(&pthread_mutex);
+			ioctl(file, 1);
+			sleep(3);
+			ioctl(file, 0);
+			key_status &= ~KEY_LONG;
+			pthread_mutex_unlock(&pthread_mutex);
+		}
+		if(key_status & KEY_SHORT)
+		{
+			pthread_mutex_lock(&pthread_mutex);
+			ioctl(file, 1);
+			sleep(1);
+			ioctl(file, 0);
+			key_status &= ~KEY_SHORT;
+			pthread_mutex_unlock(&pthread_mutex);
+		}
 	}
 
 	pthread_exit(0);
@@ -82,10 +114,12 @@ void *key_pthread_func(void *argv)
 					if(count <= 20)
 					{
 						DEBUG(" ...short key \n");
+						key_status |= KEY_SHORT;
 					}	
 					else
 					{
 						DEBUG(" ... long key \n");
+						key_status |= KEY_LONG;
 					}
 					count = 0;
 					flag = 0;	
