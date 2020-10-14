@@ -1,5 +1,5 @@
 
-CC = arm-linux-gnueabihf-gcc
+CC = gcc
 #arm-linux-gnueabihf-gcc
 
 OBJ = ./bin
@@ -14,13 +14,13 @@ INCLUDE =-I./log
 LIB = -lpthread
 
 ${target}:${object_c}	
-	${CC} -o $@ $^ ${INCLUDE} ${LIB}
+	${CC} -o  $@ $^  ${INCLUDE} ${LIB}
 
 ${OBJ}/%.o:%.c
-	${CC} -c $< -o $@ ${INCLUDE} ${LIB}
+	${CC} -c  $< -o $@  ${INCLUDE} ${LIB}
 
 ${OBJ}/%.o:./log/%.c
-	${CC} -c $< -o $@ ${INCLUDE} ${LIB}
+	${CC} -c  $< -o $@  ${INCLUDE} ${LIB}
 
 clean:
 	rm -rf ${OBJ}/*
