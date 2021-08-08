@@ -19,7 +19,7 @@
 #include <sys/ioctl.h>
 
 #include "log.h"
-
+//
 
 /////////////////////
 #define DEBUG(...) printf(__VA_ARGS__)
