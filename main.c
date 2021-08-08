@@ -20,6 +20,8 @@
 
 #include "log.h"
 /////////////////
+
+/////////////////////
 #define DEBUG(...) printf(__VA_ARGS__)
 
 void sig_func(int sig_num)
