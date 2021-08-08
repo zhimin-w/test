@@ -38,7 +38,7 @@ void *led_pthread_func(void *argv)
 	int file = open("/dev/led", O_RDWR | 0666);
 	if(file < 0)
 	{
-		DEBUG(" ... %s open error \n", __func__);		
+		DEBUG(" ... %s open error ....\n", __func__);		
 		pthread_exit(0);
 		exit(-1);
 	}
