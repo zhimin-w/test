@@ -6,6 +6,8 @@
 #include <string.h>
 11111111111111
 
+222222222222222222222222222
+3333333333333333333333333333
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
